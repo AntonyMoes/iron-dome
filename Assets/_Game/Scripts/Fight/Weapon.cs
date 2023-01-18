@@ -1,16 +1,11 @@
-﻿using Unity.Netcode;
+﻿using _Game.Scripts.Units;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace _Game.Scripts.Fight {
     public class Weapon : NetworkBehaviour {
         [SerializeField] private Projectile _projectile;
         [SerializeField] private Transform _spawnPoint;
-
-        public override void OnNetworkObjectParentChanged(NetworkObject parentNetworkObject) {
-            if (parentNetworkObject != null && parentNetworkObject.TryGetComponent<WeaponSpawner>(out var registry)) {
-                registry.RegisterWeaponSpawned(this);
-            }
-        }
 
         public void Fire() {
             SpawnProjectileServerRPC();

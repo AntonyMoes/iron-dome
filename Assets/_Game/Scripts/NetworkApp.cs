@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 namespace _Game.Scripts {
     public class NetworkApp: MonoBehaviour {
         [SerializeField] private NetworkManager _netManager;
-        [SerializeField] private NetworkObject _clientPrefab;
+        [SerializeField] private Player.NetworkPlayer _clientPrefab;
+
+        [Header("Testing")]
+        [SerializeField] private bool _testHost;
 
         private readonly Dictionary<ulong, NetworkObject> _clients = new Dictionary<ulong, NetworkObject>();
 
@@ -14,7 +16,13 @@ namespace _Game.Scripts {
             _netManager.OnClientConnectedCallback += OnClientConnected;
             _netManager.OnClientDisconnectCallback += OnClientDisconnected;
 
-            if (Application.isEditor) return;
+            if (Application.isEditor) {
+                if (_testHost) {
+                    _netManager.StartHost();
+                }
+
+                return;
+            }
 
             var args = GetCommandlineArgs();
 
@@ -45,8 +53,11 @@ namespace _Game.Scripts {
 
             if (_netManager.IsServer) {
                 var networkClient = Instantiate(_clientPrefab);
-                networkClient.SpawnWithOwnership(id);
-                _clients.Add(id, networkClient);
+                var clientObject = networkClient.NetworkObject;
+                clientObject.SpawnWithOwnership(id);  // TODO
+                Debug.LogError($"Player id outer spawn: {id}");
+                networkClient.Initialize(id);
+                _clients.Add(id, clientObject);
             }
         }
 

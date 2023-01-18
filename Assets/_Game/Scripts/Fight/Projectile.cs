@@ -22,8 +22,7 @@ namespace _Game.Scripts.Fight {
         }
 
         private void OnCollisionEnter(Collision collision) {
-            if (IsClient) {
-                gameObject.SetActive(false);
+            if (!IsServer) {
                 return;
             }
 
