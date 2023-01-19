@@ -1,28 +1,16 @@
-﻿using _Game.Scripts.Units;
+﻿using Unity.Netcode;
 using UnityEngine;
 
 namespace _Game.Scripts.Player {
     public class PlayerController : MonoBehaviour {
-        private Chassis _chassis;
-        private bool _isActive;
-
-        public void Setup(bool isActive, Chassis chassis) {
-            _isActive = isActive;
-            Cursor.visible = !isActive;
-            Cursor.lockState = isActive ? CursorLockMode.Locked : CursorLockMode.None;
-
-            _chassis = chassis;
-        }
-
-        private void Update() {
-            if (!_isActive) {
-                return;
+        public void Setup(bool isActive) {
+            if (isActive) {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
             }
-
-            UpdateInputs();
         }
 
-        private void UpdateInputs() {
+        public Inputs GetInputs() {
             var horizontalInput = Input.GetAxisRaw("Horizontal");
             var verticalInput = Input.GetAxisRaw("Vertical");
             var moveInput = new Vector2(horizontalInput, verticalInput);
@@ -33,8 +21,22 @@ namespace _Game.Scripts.Player {
 
             var fire = Input.GetButtonDown("Fire1");
 
-            if (_chassis != null) {
-                _chassis.ApplyInput(moveInput, lookInput, fire);
+            return new Inputs {
+                MoveInput = moveInput,
+                LookInput = lookInput,
+                Fire = fire
+            };
+        }
+
+        public struct Inputs : INetworkSerializable {
+            public Vector2 MoveInput;
+            public Vector2 LookInput;
+            public bool Fire;
+
+            public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter {
+                serializer.SerializeValue(ref MoveInput);
+                serializer.SerializeValue(ref LookInput);
+                serializer.SerializeValue(ref Fire);
             }
         }
     }

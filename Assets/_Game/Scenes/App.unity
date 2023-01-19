@@ -363,26 +363,6 @@ MonoBehaviour:
       SourcePrefabToOverride: {fileID: 1577051612900440993, guid: b53b1d6d77043ea4a9f6c83cef2a4231, type: 3}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
-    - Override: 0
-      Prefab: {fileID: 1067741025751951035, guid: 5361b2c9fd8fa2d4dbc21986dc2faa39, type: 3}
-      SourcePrefabToOverride: {fileID: 0}
-      SourceHashToOverride: 0
-      OverridingTargetPrefab: {fileID: 0}
-    - Override: 0
-      Prefab: {fileID: 8951202085537700433, guid: becb5799cdc39c04ebeffaf68b3ce9be, type: 3}
-      SourcePrefabToOverride: {fileID: 0}
-      SourceHashToOverride: 0
-      OverridingTargetPrefab: {fileID: 0}
-    - Override: 0
-      Prefab: {fileID: 4124147170128800923, guid: 32e8b1a74b053fe4384f76e066af5ba6, type: 3}
-      SourcePrefabToOverride: {fileID: 0}
-      SourceHashToOverride: 0
-      OverridingTargetPrefab: {fileID: 0}
-    - Override: 0
-      Prefab: {fileID: 1341390138421017791, guid: 342575fa0de43134884c8c644830a42d, type: 3}
-      SourcePrefabToOverride: {fileID: 0}
-      SourceHashToOverride: 0
-      OverridingTargetPrefab: {fileID: 0}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -531,6 +511,7 @@ GameObject:
   m_Component:
   - component: {fileID: 858928880}
   - component: {fileID: 858928881}
+  - component: {fileID: 858928882}
   m_Layer: 0
   m_Name: App
   m_TagString: Untagged
@@ -567,6 +548,24 @@ MonoBehaviour:
   _netManager: {fileID: 480754679}
   _clientPrefab: {fileID: 2369644519488921110, guid: 243d48c9346ce2948951e73c00e7009d, type: 3}
   _testHost: 0
+--- !u!114 &858928882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858928879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733bdee6aa5f4c319529288ee484f101, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _chassis:
+  - name: testCar
+    prefab: {fileID: 8951202085537700434, guid: becb5799cdc39c04ebeffaf68b3ce9be, type: 3}
+  _weapons:
+  - name: testWeapon
+    prefab: {fileID: 5669616339711175751, guid: 5361b2c9fd8fa2d4dbc21986dc2faa39, type: 3}
 --- !u!1 &1000091516
 GameObject:
   m_ObjectHideFlags: 0

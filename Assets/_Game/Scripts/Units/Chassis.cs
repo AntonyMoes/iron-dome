@@ -1,59 +1,46 @@
 ﻿using _Game.Scripts.Fight;
-using _Game.Scripts.Network;
 using _Game.Scripts.Player;
 using Unity.Netcode;
 using UnityEngine;
+using NetworkPlayer = _Game.Scripts.Player.NetworkPlayer;
 
 namespace _Game.Scripts.Units {
-    public abstract class Chassis : NetworkBehaviour, ISpawner {
+    public abstract class Chassis : MonoBehaviour {
         [SerializeField] private CameraController _cameraController;
-        protected CameraController CameraController => _cameraController;
+        [SerializeField] private Transform _weaponParent;
 
-        protected Weapon Weapon { get; private set; }
+        private Weapon _weapon;
         private bool _isPlayer;
         private Rigidbody _player;
-        private bool _spawned;
 
-        public void Setup(Weapon weaponPrefab, Rigidbody player, bool isPlayer) {
+        protected NetworkVariable<NetworkPlayer.SynchronizedState> State { get; private set; }
+
+        public void Setup(Weapon weaponPrefab, Rigidbody player, bool isPlayer, NetworkVariable<NetworkPlayer.SynchronizedState> state) {
             _player = player;
             _isPlayer = isPlayer;
             _cameraController.SetActive(isPlayer);
 
-            if (!IsServer) {
-                return;
+            _weapon = Instantiate(weaponPrefab, _weaponParent);
+            State = state;
+
+            PerformSetup();
+        }
+
+        protected virtual void PerformSetup() { }
+
+        public void ApplyInputs(bool isServer, PlayerController.Inputs inputs) {
+            // TODO: add layer of indirection
+            _cameraController.ApplyInput(inputs.LookInput);
+
+            if (isServer) {
+                PerformApplyInputs(_player, Time.deltaTime, inputs.MoveInput, _cameraController.LookRotation);
             }
 
-            var mount = SpawnWeaponMount();
-            var weapon = Instantiate(weaponPrefab);
-            weapon.transform.position = mount.ChildPosition;
-            weapon.NetworkObject.Spawn();
-            weapon.NetworkObject.TrySetParent(mount.NetworkObject);
-
-            _spawned = true;
-        }
-
-        protected abstract NestedObject SpawnWeaponMount();
-
-        public void ApplyInput(Vector2 moveInput, Vector2 lookInput, bool fire) {
-            PerformApplyInput(_player, Time.deltaTime, moveInput, lookInput, fire);
-        }
-
-        protected abstract void PerformApplyInput(Rigidbody player, float deltaTime, Vector2 moveInput, Vector2 lookInput, bool fire);
-
-        public override void OnNetworkDespawn() {
-            if (IsServer && _spawned) {
-                DespawnObjects();
+            if (inputs.Fire) {
+                _weapon.Fire(isServer);
             }
         }
 
-        protected virtual void DespawnObjects() {
-            Weapon.NetworkObject.Despawn();
-        }
-
-        public virtual void RegisterSpawned(SpawnedObject spawned) {
-            if (spawned.TryGetComponent<Weapon>(out var weapon)) {
-                Weapon = weapon;
-            }
-        }
+        protected abstract void PerformApplyInputs(Rigidbody player, float deltaTime, Vector2 moveInput, Quaternion lookRotation);
     }
 }

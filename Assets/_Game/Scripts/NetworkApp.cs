@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using NetworkPlayer = _Game.Scripts.Player.NetworkPlayer;
 
 namespace _Game.Scripts {
     public class NetworkApp: MonoBehaviour {
         [SerializeField] private NetworkManager _netManager;
-        [SerializeField] private Player.NetworkPlayer _clientPrefab;
+        [SerializeField] private NetworkPlayer _clientPrefab;
 
         [Header("Testing")]
         [SerializeField] private bool _testHost;
@@ -55,8 +56,14 @@ namespace _Game.Scripts {
                 var networkClient = Instantiate(_clientPrefab);
                 var clientObject = networkClient.NetworkObject;
                 clientObject.SpawnWithOwnership(id);  // TODO
-                Debug.LogError($"Player id outer spawn: {id}");
-                networkClient.Initialize(id);
+
+                var configuration = new NetworkPlayer.Configuration {
+                    PlayerId = id,
+                    Chassis = "testCar",
+                    Weapon = "testWeapon"
+                };
+
+                networkClient.Initialize(configuration);
                 _clients.Add(id, clientObject);
             }
         }
