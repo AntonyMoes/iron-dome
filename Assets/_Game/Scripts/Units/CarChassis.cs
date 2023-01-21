@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using NetworkPlayer = _Game.Scripts.Player.NetworkPlayer;
 
 namespace _Game.Scripts.Units {
     public class CarChassis : Chassis {
@@ -13,6 +12,7 @@ namespace _Game.Scripts.Units {
         [SerializeField] private float _motorForce;
         [SerializeField] private float _breakForce;
 
+        [Header("Joints")]
         [SerializeField] private Transform _turret;
         [SerializeField] private Transform _weaponMount;
 
@@ -33,18 +33,18 @@ namespace _Game.Scripts.Units {
         }
 
         protected override void PerformSetup() {
-            State.OnValueChanged += (_, state) => {
+            State.Subscribe(state => {
                 TurretRotation = state.Value1;
                 MountRotation = state.Value2;
-            };
+            });
         }
 
-        protected override void PerformApplyInputs(Rigidbody player, float deltaTime, Vector2 moveInput, Quaternion lookRotation) {
+        protected override void PerformApplyInputs(Rigidbody player, float deltaTime, Vector2 moveInput, Vector2 lookRotation) {
             ApplyDrivingInput(moveInput);
 
-            State.Value = new NetworkPlayer.SynchronizedState {
-                Value1 = lookRotation.eulerAngles.y,
-                Value2 = lookRotation.eulerAngles.x
+            State.Value = new Player.Player.SynchronizedState {
+                Value1 = LookRotation.x,
+                Value2 = LookRotation.y
             };
         }
 

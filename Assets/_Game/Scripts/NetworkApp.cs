@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using NetworkPlayer = _Game.Scripts.Player.NetworkPlayer;
 
 namespace _Game.Scripts {
     public class NetworkApp: MonoBehaviour {
         [SerializeField] private NetworkManager _netManager;
-        [SerializeField] private NetworkPlayer _clientPrefab;
+        [SerializeField] private Player.Player _clientPrefab;
 
         [Header("Testing")]
         [SerializeField] private bool _testHost;
@@ -54,12 +53,12 @@ namespace _Game.Scripts {
 
             if (_netManager.IsServer) {
                 var networkClient = Instantiate(_clientPrefab);
-                var clientObject = networkClient.NetworkObject;
+                var clientObject = networkClient.GetComponent<NetworkObject>();
                 clientObject.SpawnWithOwnership(id);  // TODO
 
-                var configuration = new NetworkPlayer.Configuration {
+                var configuration = new Player.Player.Configuration {
                     PlayerId = id,
-                    Chassis = "testCar",
+                    Chassis = "testMech",
                     Weapon = "testWeapon"
                 };
 

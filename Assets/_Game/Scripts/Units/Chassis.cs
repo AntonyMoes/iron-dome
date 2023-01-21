@@ -1,8 +1,7 @@
 ﻿using _Game.Scripts.Fight;
 using _Game.Scripts.Player;
-using Unity.Netcode;
+using GeneralUtils;
 using UnityEngine;
-using NetworkPlayer = _Game.Scripts.Player.NetworkPlayer;
 
 namespace _Game.Scripts.Units {
     public abstract class Chassis : MonoBehaviour {
@@ -10,14 +9,17 @@ namespace _Game.Scripts.Units {
         [SerializeField] private Transform _weaponParent;
 
         private Weapon _weapon;
-        private bool _isPlayer;
         private Rigidbody _player;
 
-        protected NetworkVariable<NetworkPlayer.SynchronizedState> State { get; private set; }
+        protected UpdatedValue<Player.Player.SynchronizedState> State { get; private set; }
 
-        public void Setup(Weapon weaponPrefab, Rigidbody player, bool isPlayer, NetworkVariable<NetworkPlayer.SynchronizedState> state) {
+        protected virtual bool RotateCameraHorizontal => true;
+        protected virtual bool RotateCameraVertical => true;
+
+        protected Vector2 LookRotation => _cameraController.LookRotation;
+
+        public void Setup(Weapon weaponPrefab, Rigidbody player, bool isPlayer, UpdatedValue<Player.Player.SynchronizedState> state) {
             _player = player;
-            _isPlayer = isPlayer;
             _cameraController.SetActive(isPlayer);
 
             _weapon = Instantiate(weaponPrefab, _weaponParent);
@@ -29,11 +31,13 @@ namespace _Game.Scripts.Units {
         protected virtual void PerformSetup() { }
 
         public void ApplyInputs(bool isServer, PlayerController.Inputs inputs) {
-            // TODO: add layer of indirection
-            _cameraController.ApplyInput(inputs.LookInput);
+            // TODO: add a layer of indirection
+
+            var rotation = _cameraController.CalculateRotation(inputs.LookInput);
+            _cameraController.ApplyRotation(rotation, RotateCameraHorizontal, RotateCameraVertical);
 
             if (isServer) {
-                PerformApplyInputs(_player, Time.deltaTime, inputs.MoveInput, _cameraController.LookRotation);
+                PerformApplyInputs(_player, Time.deltaTime, inputs.MoveInput, rotation);
             }
 
             if (inputs.Fire) {
@@ -41,6 +45,6 @@ namespace _Game.Scripts.Units {
             }
         }
 
-        protected abstract void PerformApplyInputs(Rigidbody player, float deltaTime, Vector2 moveInput, Quaternion lookRotation);
+        protected abstract void PerformApplyInputs(Rigidbody player, float deltaTime, Vector2 moveInput, Vector2 lookRotation);
     }
 }

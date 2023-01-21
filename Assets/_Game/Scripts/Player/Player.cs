@@ -3,49 +3,50 @@ using Unity.Netcode;
 using UnityEngine;
 
 namespace _Game.Scripts.Player {
-    public class NetworkPlayer : NetworkBehaviour {
+    public class Player : MonoBehaviour {
         [SerializeField] private PlayerController _playerController;
         [SerializeField] private Rigidbody _rigidbody;
 
-        private readonly NetworkVariable<Configuration> _configuration = new NetworkVariable<Configuration>(new Configuration());
+        private IPlayerSynchronizer _synchronizer;
+        private IPlayerSynchronizer Synchronizer => _synchronizer ??= GetComponent<IPlayerSynchronizer>();
 
-        private readonly NetworkVariable<SynchronizedState> _state = new NetworkVariable<SynchronizedState>();
-
-        private bool _isPlayer;
         private bool _configured;
+        private bool _isPlayer;
         private Chassis _chassis;
 
-        public NetworkPlayer() {
-            _configuration.OnValueChanged += OnConfigurationSet;
+        private void Awake() {
+            Synchronizer.Configuration.Subscribe(OnConfigurationSet);
+            Synchronizer.OnSpawn.Subscribe(OnSpawn);
+            Synchronizer.OnInputsReceived.Subscribe(OnInputsReceived);
         }
 
         public void Initialize(Configuration configuration) {
-            if (!IsServer) {
+            if (!Synchronizer.Server) {
                 return;
             }
 
-            _configuration.Value = configuration;
+            Synchronizer.Configuration.Value = configuration;
         }
 
-        public override void OnNetworkSpawn() {
-            if (_configuration.Value.Empty || _configured) {
+        private void OnSpawn() {
+            if ((Synchronizer.Configuration.Value?.Empty ?? true) || _configured) {
                 return;
             }
 
-            OnConfigurationSet(null, _configuration.Value);
+            OnConfigurationSet(Synchronizer.Configuration.Value);
         }
 
-        private void OnConfigurationSet(Configuration _, Configuration configuration) {
+        private void OnConfigurationSet(Configuration configuration) {
             _configured = true;
 
-            _isPlayer = NetworkManager.LocalClientId == configuration.PlayerId;
+            _isPlayer = Synchronizer.IsPlayer(configuration.PlayerId);
 
             var provider = PrefabProvider.Instance;
             var chassisPrefab = provider.GetChassis(configuration.Chassis);
             _chassis = Instantiate(chassisPrefab, transform);
 
             var weaponPrefab = provider.GetWeapon(configuration.Weapon);
-            _chassis.Setup(weaponPrefab, _rigidbody, _isPlayer, _state);
+            _chassis.Setup(weaponPrefab, _rigidbody, _isPlayer, Synchronizer.State);
 
             _playerController.Setup(_isPlayer);
         }
@@ -55,15 +56,14 @@ namespace _Game.Scripts.Player {
                 return;
             }
 
-            if (IsClient && _isPlayer) {
+            if (Synchronizer.Client && _isPlayer) {
                 var inputs = _playerController.GetInputs();
                 _chassis.ApplyInputs(false, inputs);
-                ApplyInputsServerRPC(inputs);
+                OnInputsReceived(inputs);
             }
         }
 
-        [ServerRpc]
-        private void ApplyInputsServerRPC(PlayerController.Inputs inputs) {
+        private void OnInputsReceived(PlayerController.Inputs inputs) {
             _chassis.ApplyInputs(true, inputs);
         }
 
@@ -86,7 +86,7 @@ namespace _Game.Scripts.Player {
             }
         }
         
-        public struct SynchronizedState : INetworkSerializable {
+        public class SynchronizedState : INetworkSerializable {
             public float Value1;
             public float Value2;
             public float Value3;

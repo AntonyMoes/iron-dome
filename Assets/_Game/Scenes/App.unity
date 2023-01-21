@@ -510,6 +510,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 858928880}
+  - component: {fileID: 858928883}
   - component: {fileID: 858928881}
   - component: {fileID: 858928882}
   m_Layer: 0
@@ -547,7 +548,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _netManager: {fileID: 480754679}
   _clientPrefab: {fileID: 2369644519488921110, guid: 243d48c9346ce2948951e73c00e7009d, type: 3}
-  _testHost: 0
+  _testHost: 1
 --- !u!114 &858928882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -563,9 +564,24 @@ MonoBehaviour:
   _chassis:
   - name: testCar
     prefab: {fileID: 8951202085537700434, guid: becb5799cdc39c04ebeffaf68b3ce9be, type: 3}
+  - name: testMech
+    prefab: {fileID: 7654991787807650900, guid: 0aa23da0ea6f6824e96678b08ef94873, type: 3}
   _weapons:
   - name: testWeapon
     prefab: {fileID: 5669616339711175751, guid: 5361b2c9fd8fa2d4dbc21986dc2faa39, type: 3}
+--- !u!114 &858928883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858928879}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ecc3f5f77c540bf805651326cf158a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _clientPrefab: {fileID: 2369644519488921110, guid: cad1859c289439443a5ee2bc3b6cbd66, type: 3}
 --- !u!1 &1000091516
 GameObject:
   m_ObjectHideFlags: 0
